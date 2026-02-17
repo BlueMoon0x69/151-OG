@@ -425,18 +425,47 @@
         // AFFICHAGE DES CARTES
         // ========================================
         
+        // Ordre Pokédex (index = position dans le tableau gen1Pokemon)
+        function getPokedexIndex(name) {
+            // Chercher le prénom de la carte dans la liste Pokédex
+            const firstName = name.split(' ')[0];
+            const idx = gen1Pokemon.indexOf(firstName);
+            return idx === -1 ? 999 : idx;
+        }
+
         function displayCards() {
             const grid = document.getElementById('cardsGrid');
             grid.innerHTML = '';
-            
-            allCards.forEach((card, index) => {
+
+            // Copier et trier selon le mode actif
+            let sorted = [...allCards];
+
+            if (currentSortMode === 'alphabet') {
+                sorted.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+            } else {
+                sorted.sort((a, b) => getPokedexIndex(a.name) - getPokedexIndex(b.name));
+            }
+
+            sorted.forEach((card, index) => {
                 const cardElement = createCardElement(card, index);
                 grid.appendChild(cardElement);
             });
-            
+
             document.getElementById('totalCards').textContent = allCards.length;
         }
-        
+
+        function toggleSort() {
+            const btn = document.getElementById('sortBtn');
+            if (currentSortMode === 'alphabet') {
+                currentSortMode = 'pokedex';
+                btn.innerHTML = '🔤 Ordre alphabétique';
+            } else {
+                currentSortMode = 'alphabet';
+                btn.innerHTML = '🔢 Ordre Pokédex';
+            }
+            displayCards();
+            loadOwnedState();
+        }
         function createCardElement(card, index) {
             const div = document.createElement('div');
             div.className = 'card-item';
@@ -631,20 +660,6 @@
             document.querySelectorAll('.card-item').forEach(card => {
                 card.style.display = 'block';
             });
-        }
-        
-        function toggleSort() {
-            const btn = document.getElementById('sortBtn');
-            if (currentSortMode === 'alphabet') {
-                currentSortMode = 'pokedex';
-                btn.innerHTML = '🔤 Ordre alphabétique';
-                // Implémenter le tri Pokédex si nécessaire
-            } else {
-                currentSortMode = 'alphabet';
-                btn.innerHTML = '🔢 Ordre Pokédex';
-            }
-            displayCards();
-            loadOwnedState();
         }
         
         // ========================================
