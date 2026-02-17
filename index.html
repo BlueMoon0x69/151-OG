@@ -573,6 +573,8 @@
                         checkbox.textContent = '✓';
                     }
                 });
+                // Mettre à jour le compteur après avoir chargé l'état
+                updateCounter();
             } catch (e) {
                 console.error('Erreur chargement état:', e);
             }
