@@ -532,7 +532,9 @@
             const rarityStars = stars[card.rarity] || '⭐⭐⭐';
             
             // Prix formaté
-            const formattedPrice = parseFloat(card.price).toFixed(2).replace('.', ',');
+            console.log('Prix brut pour', card.name, ':', card.price, 'Type:', typeof card.price);
+            const priceNum = parseFloat(String(card.price).replace(',', '.'));
+            const formattedPrice = (isNaN(priceNum) ? 0 : priceNum).toFixed(2).replace('.', ',');
             
             // Générer l'ID de la carte
             const cardId = 'card-' + card.name.toLowerCase()
