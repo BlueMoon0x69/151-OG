@@ -391,17 +391,24 @@
                         throw new Error('Format de réponse invalide');
                     }
                     
+                    // DEBUG : Afficher la première carte pour voir les noms de colonnes
+                    console.log('Première carte reçue:', data.cards[0]);
+                    
                     // Transformer les données (avec colonne Possédée)
+                    // Les clés correspondent exactement aux noms de colonnes dans ton Sheets
                     allCards = data.cards.map(card => ({
-                        name: card.Nom || '',
-                        number: card['Numéro'] || card.Numero || '',
-                        series: card['Série'] || card.Serie || '',
-                        price: card.Prix || '0',
-                        rarity: card['Rareté'] || card.Rarete || 'Illustration Rare',
+                        name: card['Nom'] || '',
+                        number: card['Numéro'] || '',
+                        series: card['Série'] || '',
+                        price: card['Prix'] || '0',
+                        rarity: card['Rareté'] || 'Illustration Rare',
                         cardmarketUrl: card['URL Cardmarket'] || '',
                         imageUrl: card['URL Image'] || '',
-                        owned: (card['Possédée'] || card.Possedee || '').toUpperCase() === 'OUI'
+                        owned: (card['Possédée'] || '').toUpperCase() === 'OUI'
                     }));
+                    
+                    console.log('Nombre de cartes chargées:', allCards.length);
+                    console.log('Première carte transformée:', allCards[0]);
                     
                 } else {
                     // Fallback : API Google Sheets classique (sans colonne Possédée)
