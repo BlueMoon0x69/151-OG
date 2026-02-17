@@ -207,16 +207,149 @@ Utilisez les filtres Google Sheets pour voir uniquement une série.
 └─────────────────┴──────────┴────────────┴────────┴──────────────┴─────────────────┴──────────────────┘
 ```
 
+
+
+# 🔄 Synchronisation des cartes possédées avec Google Sheets
+
+## 📋 Étape 1 : Ajouter la colonne "Possédée" dans ton Sheets
+
+1. Ouvre ton Google Sheets
+2. Dans la cellule **H1**, écris : `Possédée`
+3. Dans toutes les lignes de données (H2, H3, etc.), laisse vide ou écris `NON`
+
+Ta structure sera :
+```
+| A: Nom | B: Numéro | C: Série | D: Prix | E: Rareté | F: URL Cardmarket | G: URL Image | H: Possédée |
+```
+
 ---
 
-## 🎉 C'est tout !
+## ⚙️ Étape 2 : Créer le Google Apps Script (API)
 
-Vous avez maintenant une collection professionnelle gérée via Google Sheets !
+### Installation :
+1. Dans ton Google Sheets : **Extensions → Apps Script**
+2. Supprime tout le code existant
+3. Colle le code ci-dessous
+4. **Enregistre** (Ctrl+S ou icône disquette)
+5. Clique sur **Déployer → Nouveau déploiement**
+6. Choisis **Application Web**
+7. Configure :
+   - **Exécuter en tant que** : Moi
+   - **Qui a accès** : Tout le monde
+8. Clique sur **Déployer**
+9. **COPIE L'URL** qui s'affiche (tu en auras besoin !)
 
-**Ajoutez des cartes en quelques secondes, depuis n'importe où ! 🎴✨**
+### Code Apps Script :
+
+```javascript
+// ════════════════════════════════════════════════════════════
+// GOOGLE APPS SCRIPT - API de synchronisation cartes Pokémon
+// ════════════════════════════════════════════════════════════
+
+function doGet(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+  
+  // Transformer en JSON (header = première ligne)
+  const headers = data[0];
+  const rows = data.slice(1);
+  
+  const cards = rows.map(row => {
+    const card = {};
+    headers.forEach((header, index) => {
+      card[header] = row[index] || '';
+    });
+    return card;
+  });
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, cards: cards }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const params = JSON.parse(e.postData.contents);
+    
+    if (params.action === 'toggle') {
+      const rowIndex = params.rowIndex; // Index dans le tableau (0-based)
+      const isOwned = params.isOwned;   // true ou false
+      
+      // Colonne H (8ème colonne) pour "Possédée"
+      // +2 car : +1 pour header, +1 car Sheets est 1-based
+      const sheetRow = rowIndex + 2;
+      
+      sheet.getRange(sheetRow, 8).setValue(isOwned ? 'OUI' : 'NON');
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, row: sheetRow, value: isOwned }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (params.action === 'batch_toggle') {
+      const updates = params.updates; // Array de {rowIndex, isOwned}
+      
+      updates.forEach(update => {
+        const sheetRow = update.rowIndex + 2;
+        sheet.getRange(sheetRow, 8).setValue(update.isOwned ? 'OUI' : 'NON');
+      });
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, count: updates.length }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: 'Action inconnue' }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
+
+### 🔑 IMPORTANT : Copie l'URL de déploiement
+Elle ressemble à :
+```
+https://script.google.com/macros/s/AKfycbz.../exec
+```
 
 ---
 
-## 📞 Support
+## 💻 Étape 3 : Modifier le fichier HTML
 
-Des questions ? Contactez-moi et je vous aide ! 😊
+Je vais te fournir le nouveau fichier `index.html` qui :
+- Charge les données depuis Sheets avec la colonne "Possédée"
+- Envoie les mises à jour vers Apps Script quand tu coches/décoches
+- Fonctionne même hors ligne avec cache localStorage
+
+---
+
+## 🎯 Avantages de cette solution
+
+✅ **Synchronisation multi-appareils** : ton téléphone et ton ordi voient les mêmes cartes cochées  
+✅ **Sauvegarde automatique** : tout est dans Google Sheets  
+✅ **Pas de perte de données** : même si tu vides le cache navigateur  
+✅ **Calcul de la valeur** : toujours à jour  
+
+---
+
+## 🔧 Configuration dans le HTML
+
+Dans ton fichier `config.js` (ou directement dans `index.html`), ajoute :
+
+```javascript
+const CONFIG = {
+    SHEET_ID: '1NYdX5dbtBqYI0Jw9AAuXibAUw95lraH_78wxirBfPrM',
+    API_KEY: 'TON_API_KEY',
+    SHEET_NAME: 'Feuille 1',
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz.../exec'  // ← AJOUTE CETTE LIGNE
+};
+```
+
+Remplace `https://script.google.com/macros/s/AKfycbz.../exec` par l'URL que tu as copiée à l'étape 2.
+
