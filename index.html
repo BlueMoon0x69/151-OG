@@ -359,6 +359,7 @@
         const SHEET_ID  = CONFIG.SHEET_ID;
         const API_KEY   = CONFIG.API_KEY;
         const SHEET_NAME = CONFIG.SHEET_NAME;
+        const APPS_SCRIPT_URL = CONFIG.APPS_SCRIPT_URL || ''; // URL du déploiement Apps Script
         
         // ========================================
         // VARIABLES GLOBALES
@@ -376,33 +377,68 @@
                 showLoading(true);
                 updateSyncStatus('syncing', 'Synchronisation...');
                 
-                // URL de l'API Google Sheets
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error('Erreur de chargement');
+                // Si APPS_SCRIPT_URL est configuré, utiliser l'API Apps Script (avec colonne Possédée)
+                if (APPS_SCRIPT_URL) {
+                    const response = await fetch(APPS_SCRIPT_URL);
+                    
+                    if (!response.ok) {
+                        throw new Error('Erreur de chargement depuis Apps Script');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.success || !data.cards) {
+                        throw new Error('Format de réponse invalide');
+                    }
+                    
+                    // Transformer les données (avec colonne Possédée)
+                    allCards = data.cards.map(card => ({
+                        name: card.Nom || '',
+                        number: card['Numéro'] || card.Numero || '',
+                        series: card['Série'] || card.Serie || '',
+                        price: card.Prix || '0',
+                        rarity: card['Rareté'] || card.Rarete || 'Illustration Rare',
+                        cardmarketUrl: card['URL Cardmarket'] || '',
+                        imageUrl: card['URL Image'] || '',
+                        owned: (card['Possédée'] || card.Possedee || '').toUpperCase() === 'OUI'
+                    }));
+                    
+                } else {
+                    // Fallback : API Google Sheets classique (sans colonne Possédée)
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error('Erreur de chargement');
+                    }
+                    
+                    const data = await response.json();
+                    const rows = data.values;
+                    
+                    // Transformer les données en objets
+                    allCards = rows.slice(1).map(row => ({
+                        name: row[0] || '',
+                        number: row[1] || '',
+                        series: row[2] || '',
+                        price: row[3] || '0',
+                        rarity: row[4] || 'Illustration Rare',
+                        cardmarketUrl: row[5] || '',
+                        imageUrl: row[6] || '',
+                        owned: (row[7] || '').toUpperCase() === 'OUI' // Colonne H si elle existe
+                    }));
                 }
-                
-                const data = await response.json();
-                const rows = data.values;
-                
-                // Transformer les données en objets
-                allCards = rows.slice(1).map(row => ({
-                    name: row[0] || '',
-                    number: row[1] || '',
-                    series: row[2] || '',
-                    price: row[3] || '0',
-                    rarity: row[4] || 'Illustration Rare',
-                    cardmarketUrl: row[5] || '',
-                    imageUrl: row[6] || ''
-                }));
                 
                 // Afficher les cartes
                 displayCards();
+                
+                // Charger l'état depuis Sheets OU localStorage
+                if (APPS_SCRIPT_URL) {
+                    loadOwnedStateFromData(); // Utiliser les données depuis Sheets
+                } else {
+                    loadOwnedState(); // Fallback localStorage
+                }
+                
                 updateCounter();
-                loadOwnedState();
                 
                 updateSyncStatus('synced', `${allCards.length} cartes chargées`);
                 showLoading(false);
@@ -538,17 +574,57 @@
             const checkbox = event.target;
             
             checkbox.classList.toggle('checked');
-            if (checkbox.classList.contains('checked')) {
+            const isOwned = checkbox.classList.contains('checked');
+            
+            if (isOwned) {
                 checkbox.textContent = '✓';
             } else {
                 checkbox.textContent = '';
             }
             
+            // Sauvegarder dans localStorage (fallback)
             saveOwnedState();
+            
+            // Si Apps Script est configuré, envoyer la mise à jour
+            if (APPS_SCRIPT_URL) {
+                updateSheetOwned(index, isOwned);
+            }
+            
             updateCounter();
             
             if (filterActive) {
                 applyFilter();
+            }
+        }
+        
+        // Envoyer la mise à jour vers Google Sheets via Apps Script
+        async function updateSheetOwned(rowIndex, isOwned) {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'toggle',
+                        rowIndex: rowIndex,
+                        isOwned: isOwned
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`✅ Carte ${rowIndex} mise à jour : ${isOwned ? 'OUI' : 'NON'}`);
+                    // Mettre à jour les données locales aussi
+                    if (allCards[rowIndex]) {
+                        allCards[rowIndex].owned = isOwned;
+                    }
+                } else {
+                    console.error('Erreur mise à jour Sheets:', result.error);
+                }
+            } catch (error) {
+                console.error('Erreur envoi vers Sheets:', error);
             }
         }
         
@@ -577,6 +653,22 @@
                 updateCounter();
             } catch (e) {
                 console.error('Erreur chargement état:', e);
+            }
+        }
+        
+        // Nouvelle fonction : charger l'état depuis les données Sheets (colonne Possédée)
+        function loadOwnedStateFromData() {
+            try {
+                document.querySelectorAll('.card-item').forEach((card, index) => {
+                    const checkbox = card.querySelector('.owned-checkbox-top');
+                    if (checkbox && allCards[index] && allCards[index].owned) {
+                        checkbox.classList.add('checked');
+                        checkbox.textContent = '✓';
+                    }
+                });
+                updateCounter();
+            } catch (e) {
+                console.error('Erreur chargement état depuis data:', e);
             }
         }
         
