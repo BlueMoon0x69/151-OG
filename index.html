@@ -301,6 +301,10 @@
         <div class="counter" id="counter">
             <span class="owned">0</span> / <span id="totalCards">0</span> cartes possédées
             (<span class="missing" id="missingCards">0</span> manquantes)
+            <br>
+            <span style="font-size: 1.3em; font-weight: 700; color: #10b981; margin-top: 10px; display: inline-block;">
+                💰 Valeur totale : <span id="totalValue">0,00</span> €
+            </span>
         </div>
 
         <!-- Boutons -->
@@ -579,9 +583,26 @@
             const total = allCards.length;
             const missing = total - owned;
             
+            // Calculer la valeur totale des cartes possédées
+            let totalValue = 0;
+            document.querySelectorAll('.card-item').forEach((cardElement, index) => {
+                const checkbox = cardElement.querySelector('.owned-checkbox-top');
+                if (checkbox && checkbox.classList.contains('checked')) {
+                    const card = allCards[index];
+                    if (card && card.price) {
+                        // Convertir le prix en nombre (gérer les virgules et points)
+                        const price = parseFloat(String(card.price).replace(',', '.'));
+                        if (!isNaN(price)) {
+                            totalValue += price;
+                        }
+                    }
+                }
+            });
+            
             document.querySelector('.counter .owned').textContent = owned;
             document.querySelector('.counter #totalCards').textContent = total;
             document.querySelector('.counter #missingCards').textContent = missing;
+            document.querySelector('.counter #totalValue').textContent = totalValue.toFixed(2).replace('.', ',');
         }
         
         // ========================================
