@@ -1,16 +1,517 @@
-# 🎴 Collection Pokémon 151
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collection Pokémon 151 — Guide d'installation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
 
-> 📖 [Voir le guide d'installation complet →] https://bluemoon0x69.github.io/151-OG/README.html
+  :root {
+    --yellow: #FFD93D;
+    --blue: #1a56db;
+    --blue-dark: #0f3399;
+    --red: #ff4757;
+    --green: #2ed573;
+    --bg: #f0f4ff;
+    --white: #ffffff;
+    --text: #1e2a4a;
+    --gray: #6b7a99;
+    --card-shadow: 0 4px 20px rgba(26,86,219,0.12);
+  }
 
-Collection de cartes Pokémon 151 OG Art Rare Set, gérée via Google Sheets.
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
----
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
 
-### Fichiers du projet
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 60%, #3b82f6 100%);
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
 
-| Fichier | Description |
-|---|---|
-| `index.html` | Page principale de la collection |
-| `config.js` | Clé API et configuration Google Sheets |
-| `css/styles.css` | Styles du site |
-| `README.html` | Guide d'installation complet |
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    background: rgba(255,217,61,0.15);
+    border-radius: 50%;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+
+  header h1 {
+    font-size: 2em;
+    font-weight: 900;
+    color: var(--white);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  header h1 .badge {
+    background: var(--yellow);
+    color: var(--blue-dark);
+    font-size: 0.45em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+
+  header p {
+    color: rgba(255,255,255,0.75);
+    margin-top: 10px;
+    font-size: 1em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* STEP */
+  .step {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--card-shadow);
+    border-left: 5px solid var(--blue);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .step:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(26,86,219,0.18);
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .step-num {
+    background: var(--blue);
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: 1em;
+    flex-shrink: 0;
+  }
+
+  .step h2 {
+    font-size: 1.15em;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  /* COLORS PER STEP */
+  .step:nth-child(1) { border-color: #3b82f6; }
+  .step:nth-child(1) .step-num { background: #3b82f6; }
+  .step:nth-child(2) { border-color: #10b981; }
+  .step:nth-child(2) .step-num { background: #10b981; }
+  .step:nth-child(3) { border-color: #f59e0b; }
+  .step:nth-child(3) .step-num { background: #f59e0b; }
+  .step:nth-child(4) { border-color: #8b5cf6; }
+  .step:nth-child(4) .step-num { background: #8b5cf6; }
+  .step:nth-child(5) { border-color: #ef4444; }
+  .step:nth-child(5) .step-num { background: #ef4444; }
+  .step:nth-child(6) { border-color: #06b6d4; }
+  .step:nth-child(6) .step-num { background: #06b6d4; }
+
+  /* TABLE */
+  .col-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88em;
+    margin: 12px 0;
+  }
+
+  .col-table th {
+    background: #e8eeff;
+    color: var(--blue-dark);
+    padding: 8px 12px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.85em;
+    letter-spacing: 0.3px;
+  }
+
+  .col-table td {
+    padding: 7px 12px;
+    text-align: center;
+    border-bottom: 1px solid #eef0f8;
+    font-weight: 600;
+    color: var(--gray);
+  }
+
+  .col-table tr:last-child td { border-bottom: none; }
+
+  /* ORDERED LIST */
+  ol {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  ol li {
+    padding: 5px 0;
+    line-height: 1.6;
+    font-size: 0.95em;
+  }
+
+  /* CODE */
+  pre {
+    background: #1e2a4a;
+    color: #e2e8f8;
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78em;
+    overflow-x: auto;
+    margin: 14px 0;
+    line-height: 1.7;
+  }
+
+  code {
+    font-family: 'Space Mono', monospace;
+    background: #e8eeff;
+    color: var(--blue-dark);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.85em;
+  }
+
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  .comment { color: #6b7a99; }
+  .key { color: #FFD93D; }
+  .val { color: #7ee787; }
+  .str { color: #ff9f43; }
+
+  /* ALERT BOX */
+  .alert {
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 0.9em;
+    margin: 12px 0;
+    font-weight: 600;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .alert-yellow {
+    background: #fffbeb;
+    border: 1.5px solid #fbbf24;
+    color: #92400e;
+  }
+
+  .alert-green {
+    background: #f0fdf4;
+    border: 1.5px solid #34d399;
+    color: #065f46;
+  }
+
+  /* USAGE */
+  .usage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+
+  .usage-card {
+    background: #f8faff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1.5px solid #dde3f8;
+  }
+
+  .usage-card .title {
+    font-weight: 800;
+    font-size: 0.88em;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+
+  .usage-card p {
+    font-size: 0.85em;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  /* TROUBLE TABLE */
+  .trouble-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    margin-top: 10px;
+  }
+
+  .trouble-table th {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 800;
+  }
+
+  .trouble-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #eef0f8;
+    line-height: 1.5;
+  }
+
+  .trouble-table td:first-child {
+    font-weight: 700;
+    color: var(--red);
+    width: 40%;
+  }
+
+  .trouble-table tr:last-child td { border-bottom: none; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--gray);
+    font-size: 0.85em;
+  }
+
+  footer span { color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎴 Collection Pokémon 151 <span class="badge">GUIDE D'INSTALLATION</span></h1>
+  <p>Suis ces 6 étapes pour connecter ton site à Google Sheets en ~15 minutes</p>
+</header>
+
+<main>
+
+  <!-- ÉTAPE 1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <h2>Créer le Google Sheet</h2>
+    </div>
+    <ol>
+      <li>Ouvre <strong>Google Sheets</strong> et crée une nouvelle feuille</li>
+      <li>Nomme-la <code>Collection Pokémon</code></li>
+      <li>Crée ces colonnes en ligne 1 :</li>
+    </ol>
+    <table class="col-table">
+      <tr>
+        <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th>
+      </tr>
+      <tr>
+        <td>Nom</td><td>Numéro</td><td>Série</td><td>Prix</td><td>Rareté</td><td>URL Cardmarket</td><td>URL Image</td><td>Possédée</td>
+      </tr>
+    </table>
+    <ol start="4">
+      <li>Importe ton fichier <code>collection_pokemon.csv</code> via <strong>Fichier → Importer</strong></li>
+    </ol>
+  </div>
+
+  <!-- ÉTAPE 2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <h2>Rendre le Sheet public</h2>
+    </div>
+    <ol>
+      <li>Clique sur <strong>Partager</strong> (haut droite)</li>
+      <li>Passe l'accès à <strong>"Tous les utilisateurs disposant du lien"</strong> en mode <strong>Lecteur</strong></li>
+    </ol>
+    <div class="alert alert-yellow">
+      ⚠️ Le Sheet doit être public en lecture seule, jamais en mode Éditeur.
+    </div>
+  </div>
+
+  <!-- ÉTAPE 3 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <h2>Activer l'API Google Sheets</h2>
+    </div>
+    <ol>
+      <li>Va sur <strong>Google Cloud Console</strong> et crée un projet</li>
+      <li><strong>API et services → Bibliothèque</strong> → recherche <code>Google Sheets API</code> → Activer</li>
+      <li><strong>Identifiants → Créer une clé API</strong> → copie-la</li>
+      <li>Restreins la clé à Google Sheets API uniquement (sécurité)</li>
+    </ol>
+  </div>
+
+  <!-- ÉTAPE 4 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <h2>Créer le Google Apps Script</h2>
+    </div>
+    <ol>
+      <li>Dans ton Sheet : <strong>Extensions → Apps Script</strong></li>
+      <li>Remplace tout le code par celui ci-dessous et <strong>Enregistre</strong></li>
+      <li><strong>Déployer → Nouveau déploiement → Application Web</strong><br>
+        → Exécuter en tant que : <code>Moi</code> | Qui a accès : <code>Tout le monde</code></li>
+      <li>Clique sur <strong>Déployer</strong> et <strong>copie l'URL</strong> générée</li>
+    </ol>
+    <pre><code><span class="comment">// API de synchronisation cartes Pokémon</span>
+
+<span class="key">function</span> <span class="str">doGet</span>(e) {
+  <span class="key">const</span> sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  <span class="key">const</span> data = sheet.getDataRange().getValues();
+  <span class="key">const</span> headers = data[0];
+  <span class="key">const</span> cards = data.slice(1).map(row => {
+    <span class="key">const</span> card = {};
+    headers.forEach((h, i) => card[h] = row[i] || <span class="val">''</span>);
+    <span class="key">return</span> card;
+  });
+  <span class="key">return</span> ContentService
+    .createTextOutput(JSON.stringify({ success: <span class="val">true</span>, cards }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+<span class="key">function</span> <span class="str">doPost</span>(e) {
+  <span class="key">try</span> {
+    <span class="key">const</span> sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    <span class="key">const</span> params = JSON.parse(e.postData.contents);
+    <span class="key">if</span> (params.action === <span class="val">'toggle'</span>) {
+      sheet.getRange(params.rowIndex + 2, 8).setValue(params.isOwned ? <span class="val">'OUI'</span> : <span class="val">'NON'</span>);
+      <span class="key">return</span> ContentService
+        .createTextOutput(JSON.stringify({ success: <span class="val">true</span> }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  } <span class="key">catch</span> (error) {
+    <span class="key">return</span> ContentService
+      .createTextOutput(JSON.stringify({ success: <span class="val">false</span>, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</code></pre>
+  </div>
+
+  <!-- ÉTAPE 5 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <h2>Configurer le site</h2>
+    </div>
+    <p style="font-size:0.95em; margin-bottom:12px;">Ouvre <code>config.js</code> et remplis les valeurs :</p>
+    <pre><code><span class="key">const</span> CONFIG = {
+  SHEET_ID: <span class="val">'VOTRE_SHEET_ID'</span>,    <span class="comment">// Dans l'URL du Google Sheet</span>
+  API_KEY:  <span class="val">'VOTRE_API_KEY'</span>,     <span class="comment">// Créée à l'étape 3</span>
+  SHEET_NAME: <span class="val">'Feuille 1'</span>,
+  APPS_SCRIPT_URL: <span class="val">'VOTRE_URL'</span>  <span class="comment">// Copiée à l'étape 4</span>
+};</code></pre>
+    <div class="alert alert-green">
+      💡 L'ID du Sheet se trouve dans son URL : <code>docs.google.com/spreadsheets/d/<strong>[SHEET_ID]</strong>/edit</code>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 6 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <h2>Mettre en ligne sur Netlify</h2>
+    </div>
+    <p style="font-size:0.95em; margin-bottom:10px;">Uploade ces fichiers sur Netlify :</p>
+    <ol>
+      <li><code>index.html</code></li>
+      <li><code>config.js</code></li>
+      <li>Dossier <code>css/</code></li>
+    </ol>
+  </div>
+
+  <!-- UTILISATION -->
+  <div class="step" style="border-color: #10b981;">
+    <div class="step-header">
+      <div class="step-num" style="background:#10b981;">🎮</div>
+      <h2>Utilisation quotidienne</h2>
+    </div>
+    <div class="usage-grid">
+      <div class="usage-card">
+        <div class="title">➕ Ajouter une carte</div>
+        <p>Ouvre le Sheet, ajoute une ligne. Le site se met à jour automatiquement toutes les 5 min.</p>
+      </div>
+      <div class="usage-card">
+        <div class="title">✅ Cocher une carte</div>
+        <p>Coche directement sur le site. La colonne H du Sheet se synchronise en temps réel.</p>
+      </div>
+      <div class="usage-card">
+        <div class="title">✏️ Modifier une carte</div>
+        <p>Modifie le prix, la rareté, etc. dans le Sheet et clique sur 🔄 Actualiser.</p>
+      </div>
+      <div class="usage-card">
+        <div class="title">🗑️ Supprimer une carte</div>
+        <p>Supprime la ligne dans le Sheet et actualise le site.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DÉPANNAGE -->
+  <div class="step" style="border-color: #f59e0b;">
+    <div class="step-header">
+      <div class="step-num" style="background:#f59e0b;">🆘</div>
+      <h2>Dépannage</h2>
+    </div>
+    <table class="trouble-table">
+      <tr>
+        <th>Problème</th>
+        <th>Solution</th>
+      </tr>
+      <tr>
+        <td>Impossible de charger</td>
+        <td>Vérifier que le Sheet est public et que la clé API est correcte</td>
+      </tr>
+      <tr>
+        <td>Les modifs n'apparaissent pas</td>
+        <td>Cliquer sur 🔄 Actualiser ou vider le cache (Ctrl+F5)</td>
+      </tr>
+      <tr>
+        <td>Une carte ne s'affiche pas</td>
+        <td>Vérifier que l'URL de l'image est valide et que la ligne est complète</td>
+      </tr>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  Réalisé avec <span>❤️</span> pour la Collection Pokémon 151
+</footer>
+
+</body>
+</html>
