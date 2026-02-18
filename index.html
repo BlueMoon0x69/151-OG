@@ -1003,5 +1003,42 @@
             setTimeout(buildPokedexList, 100);
         };
     </script>
+    <!-- Bouton retour en haut -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Retour en haut">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
+    <style>
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 52px;
+            height: 52px;
+            background: #000;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, background 0.2s ease;
+        }
+        #scrollTopBtn svg { width: 22px; height: 22px; }
+        #scrollTopBtn.visible { opacity: 1; pointer-events: all; }
+        #scrollTopBtn:hover { background: #333; }
+    </style>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            document.getElementById('scrollTopBtn').classList.toggle('visible', window.scrollY > 300);
+        });
+    </script>
+
 </body>
 </html>
