@@ -529,8 +529,9 @@
                 sorted.sort((a, b) => getPokedexIndex(a.name) - getPokedexIndex(b.name));
             }
 
-            sorted.forEach((card, index) => {
-                const cardElement = createCardElement(card, index);
+            sorted.forEach((card) => {
+                const realIndex = allCards.indexOf(card);
+                const cardElement = createCardElement(card, realIndex);
                 grid.appendChild(cardElement);
             });
 
