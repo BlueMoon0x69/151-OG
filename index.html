@@ -548,6 +548,7 @@
                 btn.innerHTML = '🔢 Ordre Pokédex';
             }
             displayCards();
+            // Recharger l'état depuis le localStorage (toujours à jour grâce à saveOwnedState)
             loadOwnedState();
         }
         function createCardElement(card, index) {
@@ -678,10 +679,11 @@
         
         function saveOwnedState() {
             const owned = {};
-            document.querySelectorAll('.card-item').forEach((card, index) => {
+            document.querySelectorAll('.card-item').forEach((card) => {
+                const realIndex = parseInt(card.dataset.index);
                 const checkbox = card.querySelector('.owned-checkbox-top');
                 if (checkbox && checkbox.classList.contains('checked')) {
-                    owned[index] = true;
+                    owned[realIndex] = true;
                 }
             });
             localStorage.setItem('pokemon_owned_cards_gs', JSON.stringify(owned));
@@ -708,6 +710,15 @@
         // Nouvelle fonction : charger l'état depuis les données Sheets (colonne Possédée)
         function loadOwnedStateFromData() {
             try {
+                // D'abord réinitialiser tous les checkboxes
+                document.querySelectorAll('.card-item').forEach((card) => {
+                    const checkbox = card.querySelector('.owned-checkbox-top');
+                    if (checkbox) {
+                        checkbox.classList.remove('checked');
+                        checkbox.textContent = '';
+                    }
+                });
+                // Puis cocher celles qui sont possédées selon allCards
                 document.querySelectorAll('.card-item').forEach((card) => {
                     const realIndex = parseInt(card.dataset.index);
                     const checkbox = card.querySelector('.owned-checkbox-top');
@@ -716,6 +727,8 @@
                         checkbox.textContent = '✓';
                     }
                 });
+                // Synchroniser le localStorage avec cet état
+                saveOwnedState();
                 updateCounter();
             } catch (e) {
                 console.error('Erreur chargement état depuis data:', e);
