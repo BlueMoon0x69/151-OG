@@ -566,6 +566,7 @@
             const div = document.createElement('div');
             div.className = 'card-item';
             div.dataset.index = index;
+            div.dataset.name = card.name;
             
             // Obtenir les étoiles selon la rareté
             const stars = {
@@ -630,6 +631,8 @@
         function toggleOwned(event, index) {
             event.stopPropagation();
             const checkbox = event.target;
+            const cardElement = checkbox.closest('.card-item');
+            const cardName = cardElement ? cardElement.dataset.name : null;
             
             checkbox.classList.toggle('checked');
             const isOwned = checkbox.classList.contains('checked');
@@ -643,9 +646,17 @@
             // Sauvegarder dans localStorage (fallback)
             saveOwnedState();
             
-            // Si Apps Script est configuré, envoyer la mise à jour
-            if (APPS_SCRIPT_URL) {
-                updateSheetOwned(index, isOwned);
+            // Trouver le vrai index dans allCards par nom
+            const realIndex = allCards.findIndex(c => c.name === cardName);
+            
+            // Si Apps Script est configuré, envoyer la mise à jour avec le vrai index
+            if (APPS_SCRIPT_URL && realIndex !== -1) {
+                updateSheetOwned(realIndex, isOwned);
+            }
+            
+            // Mettre à jour les données locales aussi
+            if (realIndex !== -1) {
+                allCards[realIndex].owned = isOwned;
             }
             
             updateCounter();
@@ -688,10 +699,11 @@
         
         function saveOwnedState() {
             const owned = {};
-            document.querySelectorAll('.card-item').forEach((card, index) => {
+            document.querySelectorAll('.card-item').forEach((card) => {
                 const checkbox = card.querySelector('.owned-checkbox-top');
-                if (checkbox && checkbox.classList.contains('checked')) {
-                    owned[index] = true;
+                const cardName = card.dataset.name;
+                if (checkbox && checkbox.classList.contains('checked') && cardName) {
+                    owned[cardName] = true;
                 }
             });
             localStorage.setItem('pokemon_owned_cards_gs', JSON.stringify(owned));
@@ -700,14 +712,14 @@
         function loadOwnedState() {
             try {
                 const owned = JSON.parse(localStorage.getItem('pokemon_owned_cards_gs') || '{}');
-                document.querySelectorAll('.card-item').forEach((card, index) => {
+                document.querySelectorAll('.card-item').forEach((card) => {
                     const checkbox = card.querySelector('.owned-checkbox-top');
-                    if (checkbox && owned[index]) {
+                    const cardName = card.dataset.name;
+                    if (checkbox && cardName && owned[cardName]) {
                         checkbox.classList.add('checked');
                         checkbox.textContent = '✓';
                     }
                 });
-                // Mettre à jour le compteur après avoir chargé l'état
                 updateCounter();
             } catch (e) {
                 console.error('Erreur chargement état:', e);
@@ -717,9 +729,11 @@
         // Nouvelle fonction : charger l'état depuis les données Sheets (colonne Possédée)
         function loadOwnedStateFromData() {
             try {
-                document.querySelectorAll('.card-item').forEach((card, index) => {
+                document.querySelectorAll('.card-item').forEach((card) => {
                     const checkbox = card.querySelector('.owned-checkbox-top');
-                    if (checkbox && allCards[index] && allCards[index].owned) {
+                    const cardName = card.dataset.name;
+                    const cardData = allCards.find(c => c.name === cardName);
+                    if (checkbox && cardData && cardData.owned) {
                         checkbox.classList.add('checked');
                         checkbox.textContent = '✓';
                     }
@@ -735,14 +749,14 @@
             const total = allCards.length;
             const missing = total - owned;
             
-            // Calculer la valeur totale des cartes possédées
+            // Calculer la valeur totale des cartes possédées par nom
             let totalValue = 0;
-            document.querySelectorAll('.card-item').forEach((cardElement, index) => {
+            document.querySelectorAll('.card-item').forEach((cardElement) => {
                 const checkbox = cardElement.querySelector('.owned-checkbox-top');
                 if (checkbox && checkbox.classList.contains('checked')) {
-                    const card = allCards[index];
+                    const cardName = cardElement.dataset.name;
+                    const card = allCards.find(c => c.name === cardName);
                     if (card && card.price) {
-                        // Convertir le prix en nombre (gérer les virgules et points)
                         const price = parseFloat(String(card.price).replace(',', '.'));
                         if (!isNaN(price)) {
                             totalValue += price;
