@@ -1,4 +1,4 @@
-# 🎴 Collection Pokémon 151
+# Collection Pokémon 151 OG Art rare set 
 
 > 📖 **[Voir le guide d'installation complet →](https://bluemoon0x69.github.io/151-OG/README.html)**
 
