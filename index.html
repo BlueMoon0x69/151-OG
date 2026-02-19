@@ -10,6 +10,156 @@
     <link rel="stylesheet" href="css/styles.css">
     
     <style>
+        /* ===== DARK MODE (style Cardmarket) ===== */
+        body {
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Fond général : gris très sombre */
+        body.dark-mode {
+            background: #1e1e1e !important;
+        }
+
+        /* Container principal */
+        body.dark-mode .container {
+            background: #2a2a2a !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+        }
+
+        /* Titre */
+        body.dark-mode .title {
+            color: #e8e8e8 !important;
+        }
+
+        /* Cartes */
+        body.dark-mode .card-item {
+            background: #333333 !important;
+            border-color: #444444 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+        }
+
+        body.dark-mode .card-item:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5) !important;
+        }
+
+        body.dark-mode .card-item.is-owned {
+            border-color: #10b981 !important;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3) !important;
+        }
+
+        body.dark-mode .card-name {
+            color: #e8e8e8 !important;
+        }
+
+        body.dark-mode .card-number {
+            color: #aaaaaa !important;
+        }
+
+        /* Compteur */
+        body.dark-mode .counter {
+            background: #333333 !important;
+            color: #e8e8e8 !important;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4) !important;
+        }
+
+        /* Barre de recherche */
+        body.dark-mode .search-box {
+            background: #3d3d3d !important;
+            color: #e8e8e8 !important;
+            border-color: #555555 !important;
+        }
+
+        body.dark-mode .search-box::placeholder {
+            color: #888888 !important;
+        }
+
+        /* Pokédex */
+        body.dark-mode .pokedex-list {
+            background: #333333 !important;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4) !important;
+        }
+
+        body.dark-mode .pokedex-list h2 {
+            color: #e8e8e8 !important;
+        }
+
+        body.dark-mode .pokedex-list h2 span {
+            color: #888888 !important;
+        }
+
+        body.dark-mode .pokedex-entry {
+            background: #3d3d3d !important;
+            border-color: transparent !important;
+        }
+
+        body.dark-mode .pokedex-entry:hover {
+            background: #4a3020 !important;
+            border-color: #ff6a00 !important;
+        }
+
+        body.dark-mode .pokedex-entry.has-card {
+            background: #1e3328 !important;
+            border-color: #10b981 !important;
+        }
+
+        body.dark-mode .pokedex-num {
+            color: #888888 !important;
+        }
+
+        body.dark-mode .pokedex-name {
+            color: #e8e8e8 !important;
+        }
+
+        body.dark-mode .pokedex-entry.has-card .pokedex-name {
+            color: #34d399 !important;
+        }
+
+        /* Footer */
+        body.dark-mode .footer {
+            background: linear-gradient(135deg, #cc5500 0%, #aa4400 100%) !important;
+        }
+
+        /* Loading */
+        body.dark-mode .loading-content {
+            background: #333333 !important;
+            color: #e8e8e8 !important;
+        }
+
+        body.dark-mode .loading-content h2 {
+            color: #e8e8e8 !important;
+        }
+
+        /* ===== BOUTON DARK MODE ===== */
+        #darkModeBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            background: #2a2a2a;
+            color: #f5c400;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #darkModeBtn:hover {
+            transform: scale(1.1) rotate(20deg);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        body.dark-mode #darkModeBtn {
+            background: #f5c400;
+            color: #2a2a2a;
+        }
+
         /* ===== BOUTONS SUR UNE LIGNE ===== */
         .buttons-container {
             display: flex !important;
@@ -356,7 +506,8 @@
     </div>
     <div id="loadingBarLabel"></div>
 
-    <!-- Container principal -->
+    <!-- Bouton Dark Mode -->
+    <button id="darkModeBtn" onclick="toggleDarkMode()" title="Mode sombre">🌙</button>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -640,7 +791,9 @@
                 'Illustration Rare': '⭐⭐⭐',
                 'Ultra Rare': '⭐⭐⭐⭐',
                 'SIR': '⭐⭐⭐⭐⭐',
-                'Hyper Rare': '⭐⭐⭐⭐⭐⭐'
+                'Hyper Rare': '⭐⭐⭐⭐⭐⭐',
+                'AR': '⭐',
+                'ALT': '⭐⭐'
             };
             
             const rarityStars = stars[card.rarity] || '⭐⭐⭐';
@@ -933,6 +1086,27 @@
             });
         }
         
+        // ========================================
+        // DARK MODE
+        // ========================================
+
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            document.getElementById('darkModeBtn').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('pokemon_dark_mode', isDark ? '1' : '0');
+        }
+
+        // Par défaut : mode clair. On respecte le choix uniquement si explicitement sauvegardé.
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('pokemon_dark_mode') === '1') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeBtn').textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('darkModeBtn').textContent = '🌙';
+            }
+        });
+
         // ========================================
         // INITIALISATION
         // ========================================
