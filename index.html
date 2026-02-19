@@ -76,30 +76,6 @@
             gap: 8px;
         }
 
-        /* Limiter la grille de cartes à 6 colonnes max */
-        .cards-grid {
-            grid-template-columns: repeat(6, 1fr) !important;
-        }
-
-        /* Élargir le fond blanc */
-        .container {
-            max-width: 1400px !important;
-            width: 95% !important;
-        }
-
-        @media (max-width: 1200px) {
-            .cards-grid { grid-template-columns: repeat(5, 1fr) !important; }
-        }
-        @media (max-width: 960px) {
-            .cards-grid { grid-template-columns: repeat(4, 1fr) !important; }
-        }
-        @media (max-width: 700px) {
-            .cards-grid { grid-template-columns: repeat(3, 1fr) !important; }
-        }
-        @media (max-width: 500px) {
-            .cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-
         .pokedex-entry {
             display: flex;
             align-items: center;
@@ -283,6 +259,16 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* ===== INDICATEUR VISUEL CARTE POSSÉDÉE ===== */
+        .card-item.is-owned {
+            border: 2.5px solid #10b981 !important;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25) !important;
+        }
+
+        .card-item.is-owned .card-image {
+            filter: brightness(1.05);
         }
     </style>
 </head>
@@ -647,8 +633,10 @@
             
             if (isOwned) {
                 checkbox.textContent = '✓';
+                checkbox.closest('.card-item').classList.add('is-owned');
             } else {
                 checkbox.textContent = '';
+                checkbox.closest('.card-item').classList.remove('is-owned');
             }
             
             // Sauvegarder dans localStorage (fallback)
@@ -728,11 +716,15 @@
         // Nouvelle fonction : charger l'état depuis les données Sheets (colonne Possédée)
         function loadOwnedStateFromData() {
             try {
-                document.querySelectorAll('.card-item').forEach((card, index) => {
+                document.querySelectorAll('.card-item').forEach((card) => {
                     const checkbox = card.querySelector('.owned-checkbox-top');
-                    if (checkbox && allCards[index] && allCards[index].owned) {
+                    const realIndex = parseInt(card.dataset.index);
+                    if (checkbox && allCards[realIndex] && allCards[realIndex].owned) {
                         checkbox.classList.add('checked');
                         checkbox.textContent = '✓';
+                        card.classList.add('is-owned');
+                    } else {
+                        card.classList.remove('is-owned');
                     }
                 });
                 updateCounter();
