@@ -10,7 +10,7 @@ Collection de cartes Pokémon 151 OG Art Rare Set, gérée via Google Sheets.
 
 | Fichier | Description |
 |---|---|
-| `index.html` | Page principale de la collection 151 OG |
+| `index.html` | Page principale |
 | `config.js` | Clé API et configuration Google Sheets |
 | `css/styles.css` | Styles du site |
 | `README.html` | Guide d'installation complet |
