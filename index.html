@@ -260,6 +260,33 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* ===== INDICATEUR VISUEL CARTE POSSÉDÉE ===== */
+        .card-item.is-owned {
+            border: 2.5px solid #10b981 !important;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25) !important;
+            position: relative;
+        }
+
+        .card-item.is-owned .card-image {
+            filter: brightness(1.05);
+        }
+
+        .card-item.is-owned::after {
+            content: '✓ Possédée';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #10b981;
+            color: white;
+            font-size: 0.7em;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+            pointer-events: none;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -529,9 +556,8 @@
                 sorted.sort((a, b) => getPokedexIndex(a.name) - getPokedexIndex(b.name));
             }
 
-            sorted.forEach((card) => {
-                const realIndex = allCards.indexOf(card);
-                const cardElement = createCardElement(card, realIndex);
+            sorted.forEach((card, index) => {
+                const cardElement = createCardElement(card, index);
                 grid.appendChild(cardElement);
             });
 
@@ -548,7 +574,6 @@
                 btn.innerHTML = '🔢 Ordre Pokédex';
             }
             displayCards();
-            // Recharger l'état depuis le localStorage (toujours à jour grâce à saveOwnedState)
             loadOwnedState();
         }
         function createCardElement(card, index) {
@@ -564,9 +589,7 @@
                 'Illustration Rare': '⭐⭐⭐',
                 'Ultra Rare': '⭐⭐⭐⭐',
                 'SIR': '⭐⭐⭐⭐⭐',
-                'Hyper Rare': '⭐⭐⭐⭐⭐⭐',
-                'AR': '⭐',
-                'ALT': '⭐⭐'
+                'Hyper Rare': '⭐⭐⭐⭐⭐⭐'
             };
             
             const rarityStars = stars[card.rarity] || '⭐⭐⭐';
@@ -627,8 +650,10 @@
             
             if (isOwned) {
                 checkbox.textContent = '✓';
+                checkbox.closest('.card-item').classList.add('is-owned');
             } else {
                 checkbox.textContent = '';
+                checkbox.closest('.card-item').classList.remove('is-owned');
             }
             
             // Sauvegarder dans localStorage (fallback)
@@ -679,11 +704,10 @@
         
         function saveOwnedState() {
             const owned = {};
-            document.querySelectorAll('.card-item').forEach((card) => {
-                const realIndex = parseInt(card.dataset.index);
+            document.querySelectorAll('.card-item').forEach((card, index) => {
                 const checkbox = card.querySelector('.owned-checkbox-top');
                 if (checkbox && checkbox.classList.contains('checked')) {
-                    owned[realIndex] = true;
+                    owned[index] = true;
                 }
             });
             localStorage.setItem('pokemon_owned_cards_gs', JSON.stringify(owned));
@@ -692,10 +716,9 @@
         function loadOwnedState() {
             try {
                 const owned = JSON.parse(localStorage.getItem('pokemon_owned_cards_gs') || '{}');
-                document.querySelectorAll('.card-item').forEach((card) => {
-                    const realIndex = parseInt(card.dataset.index);
+                document.querySelectorAll('.card-item').forEach((card, index) => {
                     const checkbox = card.querySelector('.owned-checkbox-top');
-                    if (checkbox && owned[realIndex]) {
+                    if (checkbox && owned[index]) {
                         checkbox.classList.add('checked');
                         checkbox.textContent = '✓';
                     }
@@ -710,25 +733,17 @@
         // Nouvelle fonction : charger l'état depuis les données Sheets (colonne Possédée)
         function loadOwnedStateFromData() {
             try {
-                // D'abord réinitialiser tous les checkboxes
-                document.querySelectorAll('.card-item').forEach((card) => {
+                document.querySelectorAll('.card-item').forEach((card, index) => {
                     const checkbox = card.querySelector('.owned-checkbox-top');
-                    if (checkbox) {
-                        checkbox.classList.remove('checked');
-                        checkbox.textContent = '';
-                    }
-                });
-                // Puis cocher celles qui sont possédées selon allCards
-                document.querySelectorAll('.card-item').forEach((card) => {
                     const realIndex = parseInt(card.dataset.index);
-                    const checkbox = card.querySelector('.owned-checkbox-top');
                     if (checkbox && allCards[realIndex] && allCards[realIndex].owned) {
                         checkbox.classList.add('checked');
                         checkbox.textContent = '✓';
+                        card.classList.add('is-owned');
+                    } else {
+                        card.classList.remove('is-owned');
                     }
                 });
-                // Synchroniser le localStorage avec cet état
-                saveOwnedState();
                 updateCounter();
             } catch (e) {
                 console.error('Erreur chargement état depuis data:', e);
@@ -742,11 +757,10 @@
             
             // Calculer la valeur totale des cartes possédées
             let totalValue = 0;
-            document.querySelectorAll('.card-item').forEach((cardElement) => {
+            document.querySelectorAll('.card-item').forEach((cardElement, index) => {
                 const checkbox = cardElement.querySelector('.owned-checkbox-top');
                 if (checkbox && checkbox.classList.contains('checked')) {
-                    const realIndex = parseInt(cardElement.dataset.index);
-                    const card = allCards[realIndex];
+                    const card = allCards[index];
                     if (card && card.price) {
                         // Convertir le prix en nombre (gérer les virgules et points)
                         const price = parseFloat(String(card.price).replace(',', '.'));
