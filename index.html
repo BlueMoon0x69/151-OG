@@ -261,6 +261,34 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* ===== CONTAINER ÉLARGI + 6 COLONNES ===== */
+        .container {
+            max-width: 1400px !important;
+            width: 95% !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            box-sizing: border-box !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        .cards-grid {
+            grid-template-columns: repeat(6, 1fr) !important;
+        }
+
+        @media (max-width: 1200px) {
+            .cards-grid { grid-template-columns: repeat(5, 1fr) !important; }
+        }
+        @media (max-width: 960px) {
+            .cards-grid { grid-template-columns: repeat(4, 1fr) !important; }
+        }
+        @media (max-width: 700px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
         /* ===== INDICATEUR VISUEL CARTE POSSÉDÉE ===== */
         .card-item.is-owned {
             border: 2.5px solid #10b981 !important;
@@ -530,17 +558,17 @@
             const grid = document.getElementById('cardsGrid');
             grid.innerHTML = '';
 
-            // Copier et trier selon le mode actif
-            let sorted = [...allCards];
+            // Garder le vrai index dans allCards
+            let sorted = allCards.map((card, realIndex) => ({ card, realIndex }));
 
             if (currentSortMode === 'alphabet') {
-                sorted.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+                sorted.sort((a, b) => a.card.name.localeCompare(b.card.name, 'fr'));
             } else {
-                sorted.sort((a, b) => getPokedexIndex(a.name) - getPokedexIndex(b.name));
+                sorted.sort((a, b) => getPokedexIndex(a.card.name) - getPokedexIndex(b.card.name));
             }
 
-            sorted.forEach((card, index) => {
-                const cardElement = createCardElement(card, index);
+            sorted.forEach(({ card, realIndex }) => {
+                const cardElement = createCardElement(card, realIndex);
                 grid.appendChild(cardElement);
             });
 
@@ -557,7 +585,7 @@
                 btn.innerHTML = '🔢 Ordre Pokédex';
             }
             displayCards();
-            loadOwnedState();
+            loadOwnedStateFromData();
         }
         function createCardElement(card, index) {
             const div = document.createElement('div');
@@ -738,18 +766,16 @@
             const total = allCards.length;
             const missing = total - owned;
             
-            // Calculer la valeur totale des cartes possédées
+            // Calculer la valeur totale via le vrai index
             let totalValue = 0;
-            document.querySelectorAll('.card-item').forEach((cardElement, index) => {
+            document.querySelectorAll('.card-item').forEach((cardElement) => {
                 const checkbox = cardElement.querySelector('.owned-checkbox-top');
                 if (checkbox && checkbox.classList.contains('checked')) {
-                    const card = allCards[index];
+                    const realIndex = parseInt(cardElement.dataset.index);
+                    const card = allCards[realIndex];
                     if (card && card.price) {
-                        // Convertir le prix en nombre (gérer les virgules et points)
                         const price = parseFloat(String(card.price).replace(',', '.'));
-                        if (!isNaN(price)) {
-                            totalValue += price;
-                        }
+                        if (!isNaN(price)) totalValue += price;
                     }
                 }
             });
