@@ -76,6 +76,21 @@
             gap: 8px;
         }
 
+        /* Limiter la grille de cartes à 5 colonnes max */
+        .cards-grid {
+            grid-template-columns: repeat(5, 1fr) !important;
+        }
+
+        @media (max-width: 1100px) {
+            .cards-grid { grid-template-columns: repeat(4, 1fr) !important; }
+        }
+        @media (max-width: 860px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+        @media (max-width: 600px) {
+            .cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
         .pokedex-entry {
             display: flex;
             align-items: center;
@@ -259,33 +274,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        /* ===== INDICATEUR VISUEL CARTE POSSÉDÉE ===== */
-        .card-item.is-owned {
-            border: 2.5px solid #10b981 !important;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25) !important;
-            position: relative;
-        }
-
-        .card-item.is-owned .card-image {
-            filter: brightness(1.05);
-        }
-
-        .card-item.is-owned::after {
-            content: '✓ Possédée';
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #10b981;
-            color: white;
-            font-size: 0.7em;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 4px;
-            letter-spacing: 0.3px;
-            pointer-events: none;
-            z-index: 10;
         }
     </style>
 </head>
@@ -650,10 +638,8 @@
             
             if (isOwned) {
                 checkbox.textContent = '✓';
-                checkbox.closest('.card-item').classList.add('is-owned');
             } else {
                 checkbox.textContent = '';
-                checkbox.closest('.card-item').classList.remove('is-owned');
             }
             
             // Sauvegarder dans localStorage (fallback)
@@ -735,13 +721,9 @@
             try {
                 document.querySelectorAll('.card-item').forEach((card, index) => {
                     const checkbox = card.querySelector('.owned-checkbox-top');
-                    const realIndex = parseInt(card.dataset.index);
-                    if (checkbox && allCards[realIndex] && allCards[realIndex].owned) {
+                    if (checkbox && allCards[index] && allCards[index].owned) {
                         checkbox.classList.add('checked');
                         checkbox.textContent = '✓';
-                        card.classList.add('is-owned');
-                    } else {
-                        card.classList.remove('is-owned');
                     }
                 });
                 updateCounter();
