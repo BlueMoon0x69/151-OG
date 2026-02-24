@@ -293,18 +293,144 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0);
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            transition: background 0.4s ease;
         }
 
-        .modal-content {
-            max-width: 90vw;
-            max-height: 90vh;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        .modal.modal-visible {
+            background: rgba(0, 0, 0, 0.92);
+        }
+
+        /* Particules holographiques */
+        .modal-particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatParticle 3s ease-in-out infinite;
+        }
+
+        @keyframes floatParticle {
+            0%   { transform: translateY(0) scale(0); opacity: 0; }
+            20%  { opacity: 1; }
+            80%  { opacity: 0.6; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        }
+
+        /* Container 3D */
+        .modal-card-wrapper {
+            perspective: 1000px;
             cursor: default;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Halo lumineux derrière la carte */
+        .modal-card-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -30px;
+            border-radius: 24px;
+            background: radial-gradient(ellipse at center, rgba(245, 196, 0, 0.35) 0%, rgba(255, 106, 0, 0.2) 40%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.6s ease 0.5s;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(8px);
+        }
+
+        .modal-card-wrapper.glow-active::before {
+            opacity: 1;
+        }
+
+        /* La carte elle-même */
+        .modal-content {
+            max-width: min(420px, 85vw);
+            max-height: 90vh;
+            border-radius: 16px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 2px rgba(255,200,50,0.3);
+            cursor: default;
+            display: block;
+            opacity: 0;
+            transform: rotateY(-180deg) scale(0.6);
+            transform-style: preserve-3d;
+            transform-origin: center center;
+            transition:
+                transform 0.75s cubic-bezier(0.34, 1.4, 0.64, 1),
+                opacity 0.1s ease,
+                box-shadow 0.5s ease;
+            will-change: transform;
+        }
+
+        .modal-content.card-flipped {
+            opacity: 1;
+            transform: rotateY(0deg) scale(1);
+            box-shadow: 
+                0 30px 80px rgba(0,0,0,0.7),
+                0 0 40px rgba(245, 196, 0, 0.25),
+                0 0 80px rgba(255, 106, 0, 0.15),
+                0 0 0 2px rgba(255,200,50,0.4);
+        }
+
+        /* Reflet holographique sur la carte */
+        .modal-card-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.15) 0%,
+                rgba(255,255,255,0) 40%,
+                rgba(255,255,255,0.05) 60%,
+                rgba(255,255,255,0) 100%
+            );
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease 0.7s;
+            z-index: 2;
+        }
+
+        .modal-card-wrapper.glow-active::after {
+            opacity: 1;
+        }
+
+        /* Shimmer animé quand la carte arrive */
+        @keyframes shimmerCard {
+            0%   { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .modal-content.card-flipped {
+            animation-name: cardLand;
+            animation-duration: 0.4s;
+            animation-delay: 0.75s;
+            animation-fill-mode: backwards;
+        }
+
+        @keyframes cardLand {
+            0%   { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0px rgba(245,196,0,0); }
+            50%  { box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 60px rgba(245,196,0,0.6), 0 0 100px rgba(255,106,0,0.4); }
+            100% { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 40px rgba(245,196,0,0.25), 0 0 80px rgba(255,106,0,0.15); }
+        }
+
+        /* Fermeture */
+        .modal-content.card-closing {
+            transform: rotateY(180deg) scale(0.5) !important;
+            opacity: 0 !important;
+            transition: transform 0.45s cubic-bezier(0.4, 0, 0.8, 0.6), opacity 0.3s ease !important;
         }
 
         .close {
@@ -316,12 +442,18 @@
             font-weight: bold;
             cursor: pointer;
             line-height: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease 0.7s, transform 0.2s ease;
+            z-index: 10;
+        }
+
+        .modal.modal-visible .close {
             opacity: 0.8;
-            transition: opacity 0.2s;
         }
 
         .close:hover {
-            opacity: 1;
+            opacity: 1 !important;
+            transform: scale(1.1) rotate(90deg);
         }
 
         /* ===== BARRE DE CHARGEMENT ===== */
@@ -598,8 +730,11 @@
 
         <!-- Modal Lightbox -->
         <div class="modal" id="modal" onclick="closeModal()">
+            <div class="modal-particles" id="modalParticles"></div>
             <span class="close" onclick="closeModal()">&times;</span>
-            <img class="modal-content" id="modal-img" onclick="event.stopPropagation()">
+            <div class="modal-card-wrapper" id="modalCardWrapper" onclick="event.stopPropagation()">
+                <img class="modal-content" id="modal-img">
+            </div>
         </div>
 
         <!-- Liste des 151 Pokémon -->
@@ -1033,16 +1168,74 @@
             loadFromGoogleSheets();
         }
         
+        function spawnParticles() {
+            const container = document.getElementById('modalParticles');
+            container.innerHTML = '';
+            const colors = ['#f5c400', '#ff6a00', '#fff', '#ff9a56', '#ffd700', '#ff4500'];
+            const count = 20;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 8 + 3;
+                p.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${20 + Math.random() * 60}%;
+                    top: ${40 + Math.random() * 30}%;
+                    animation-delay: ${Math.random() * 0.8 + 0.5}s;
+                    animation-duration: ${1.5 + Math.random() * 2}s;
+                    box-shadow: 0 0 6px currentColor;
+                `;
+                container.appendChild(p);
+            }
+        }
+
         function openModal(imageUrl) {
             const modal = document.getElementById('modal');
             const img = document.getElementById('modal-img');
+            const wrapper = document.getElementById('modalCardWrapper');
+
+            // Reset state
+            img.classList.remove('card-flipped', 'card-closing');
+            wrapper.classList.remove('glow-active');
+
             img.src = imageUrl;
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+
+            // Spawn particles
+            spawnParticles();
+
+            // Trigger backdrop fade
+            requestAnimationFrame(() => {
+                modal.classList.add('modal-visible');
+                // Start flip animation
+                requestAnimationFrame(() => {
+                    img.classList.add('card-flipped');
+                    // Add glow after flip lands
+                    setTimeout(() => {
+                        wrapper.classList.add('glow-active');
+                    }, 700);
+                });
+            });
         }
         
         function closeModal() {
-            document.getElementById('modal').style.display = 'none';
+            const modal = document.getElementById('modal');
+            const img = document.getElementById('modal-img');
+            const wrapper = document.getElementById('modalCardWrapper');
+
+            img.classList.add('card-closing');
+            wrapper.classList.remove('glow-active');
+            modal.classList.remove('modal-visible');
+
+            setTimeout(() => {
+                modal.style.display = 'none';
+                img.classList.remove('card-flipped', 'card-closing');
+                document.getElementById('modalParticles').innerHTML = '';
+            }, 450);
+
             document.body.style.overflow = 'auto';
         }
 
