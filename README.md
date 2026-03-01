@@ -18,6 +18,9 @@ Collection de cartes Pokémon 151 OG Art Rare Set, gérée via Google Sheets.
 ### Divers 
 - Google sheets : Selectionner la cellule A , clic droit , Trier la feuille de A à Z
 - Formule Pokepedia Série : =getSerieNameFR(A2; REGEXEXTRACT(B2; "^[^/]+"))
-- Formule Pokepedia Image : =getPokepediaImageUrl(A2; REGEXEXTRACT(B2; "^[^/]+"))
+- Rechercher l'image de la carte : Aller sur AppsScript et lancer remplirImage
+<img width="513" height="51" alt="image" src="https://github.com/user-attachments/assets/2753a0dc-2f78-4762-b8f1-3cd899bf6a10" />
+
+
 - Site pour trouver une image : https://www.pokepedia.fr/Portail:Accueil
 - https://www.pokecardex.com/
