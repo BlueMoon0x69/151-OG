@@ -1054,7 +1054,7 @@
             div.innerHTML = `
                 <div class="card-visual">
                     <div class="owned-checkbox-top" onclick="toggleOwned(event, ${index})"></div>
-                    <img src="${card.imageUrl}" alt="${card.name}" class="card-image" onclick="openModal('${card.imageUrl}')">
+                    <img src="https://wsrv.nl/?url=${encodeURIComponent(card.imageUrl)}" alt="${card.name}" class="card-image" onclick="openModal('${card.imageUrl}')">
                 </div>
                 <div class="card-info">
                     <div class="card-name" id="${cardId}">${card.name}</div>
@@ -1307,7 +1307,7 @@
             img.classList.remove('card-flipped', 'card-closing');
             wrapper.classList.remove('glow-active');
 
-            img.src = imageUrl;
+            img.src = "https://wsrv.nl/?url=" + encodeURIComponent(imageUrl);
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
 
