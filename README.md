@@ -16,6 +16,6 @@ Collection de cartes Pokémon 151 OG Art Rare Set, gérée via Google Sheets.
 | `README.html` | Guide d'installation complet |
 
 ### Google sheets 
-Trier les noms par ordre alphabétique => Selectionner la cellule A / Trier la feuille de A à Z
+- Trier les noms par ordre alphabétique => Selectionner la cellule A / Trier la feuille de A à Z
 1 - Rechercher automatiquement le nom de la série sur Poképédia => Extentions / Apps Script / Exécuter remplirSeries
 2 - Rechercher automatiquement l'image de la carte sur Poképédia => Extentions / Apps Script / Exécuter remplirImages
